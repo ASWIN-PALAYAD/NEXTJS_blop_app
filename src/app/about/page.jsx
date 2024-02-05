@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import styles from './about.module.css';
 
+export const metadata = {
+  title: 'about page',
+  description: 'about description',
+}
 
 const AboutPage = () => {
   return (
