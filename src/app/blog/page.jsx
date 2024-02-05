@@ -5,7 +5,7 @@ import { getPosts } from '@/lib/data';
 //direct api fetching
 
 const getData = async()=> {
-  const res = await fetch("http://localhost:3000/api/blog",{cache:'no-store',next:{revalidate:30000}});
+  const res = await fetch("http://localhost:3000/api/blog/",{cache:'no-store',next:{revalidate:30000}});
   console.log(res);
 
   if(!res.ok){
