@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Post, User } from "./models";
 import { connectToDb } from "./utils";
 import { signIn, signOut } from "./auth";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 
 //add post 
@@ -56,21 +56,22 @@ export const handleGithubLogin = async() => {
     
   }
 
-  export const register = async(formData) => {
+  export const register = async(previousState,formData) => {
     const {username,email,password,passwordRepeat,img} = Object.fromEntries(formData);
     console.log(username,email,password,passwordRepeat);
 
 
     if(passwordRepeat !== password){
-        return "Password doesnot match"
+        return {error:'Password doesnot match'}
     }
 
     try {
         connectToDb();
 
         const user = await User.findOne({username});
+        console.log('user' + user);
         if(user){
-            return "user already exist"
+            return {error:'User already exist'}
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -84,8 +85,23 @@ export const handleGithubLogin = async() => {
         });
         await newUser.save();
         console.log('user saved to db');
+        return {success : true}
     } catch (error) {
         console.log(error);
         return {error:'Somthing went wrong'}
+    }
+  };
+
+  export const login = async (previousState,formData) => {
+    const {username, password } = Object.fromEntries(formData);
+    console.log(username,password);
+    try {
+        await signIn("credentials",{username,password});
+    } catch (error) {
+        console.log(error.message);
+        if(error?.message.includes("CredentialsSignin")){
+            return{error:"Invalid username or password"}
+        }
+        throw error
     }
   }
