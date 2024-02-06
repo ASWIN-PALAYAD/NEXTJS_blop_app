@@ -48,6 +48,7 @@ export const getAllUsers = async() => {
     try {
         connectToDb();
         const users = await User.find();
+        console.log(users);
         return users;
     } catch (error) {
         throw new Error("Failed to fetch all users")

@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs'
 
 
 //add post 
-export const addPost = async(formData) => {
+export const addPost = async(previousState,formData) => {
     
 
     const {title,slug,desc,userId} = Object.fromEntries(formData);
@@ -20,7 +20,8 @@ export const addPost = async(formData) => {
         });
         await newPost.save();
         console.log('saved to db');
-        revalidatePath('/blog')
+        revalidatePath('/blog');
+        revalidatePath('/admin');
     } catch (error) {
         console.log(error);
         return {error:"Somthing went wrong"}
@@ -28,21 +29,65 @@ export const addPost = async(formData) => {
 
 };
 
+
+//add user 
+export const addUser = async(previousState,formData) => {
+    
+
+    const {username,email,password,img} = Object.fromEntries(formData);
+
+    try {
+        connectToDb();
+        const newUser = new User({
+            username,email,password,img
+        });
+        await newUser.save();
+        console.log('saved to db');
+        revalidatePath('/admin')
+    } catch (error) {
+        console.log(error);
+        return {error:"Somthing went wrong"}
+    }
+
+};
+
+
 //delete post 
 export const deletePost = async(formData) => {
+
+    const {id} = Object.fromEntries(formData)
     
-   const {id} = formData;
    try {
     connectToDb();
     await Post.findOneAndDelete(id);
     console.log('delted from db');
     revalidatePath('/blog');
+    revalidatePath('/admin');
    } catch (error) {
     console.log(error);
     return {error:"sothing went wrong"}
    }
     
 }
+
+
+//delete user 
+export const deleteUser = async(formData) => {
+    
+    const {id} = formData;
+    try {
+     connectToDb();
+     await Post.deleteMany({userId:id});
+     await User.findOneAndDelete(id);
+     console.log('delted from db');
+     revalidatePath('/admin');
+    } catch (error) {
+     console.log(error);
+     return {error:"sothing went wrong"}
+    }
+     
+ }
+
 
 export const handleGithubLogin = async() => {             
     "use server"
@@ -99,9 +144,9 @@ export const handleGithubLogin = async() => {
         await signIn("credentials",{username,password});
     } catch (error) {
         console.log(error.message);
-        if(error?.message.includes("CredentialsSignin")){
+        if(error?.message.includes("CredentialsSignin")){ 
             return{error:"Invalid username or password"}
         }
-        throw error
+        throw error;
     }
   }
